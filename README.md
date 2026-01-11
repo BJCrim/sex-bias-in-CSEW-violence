@@ -1,5 +1,5 @@
 ## README file for code archive for the paper:
-## **Re-sexing violent crime: Sex bias in official estimates of violent crime underestimates the extent of violence against women and girls**        by Sylvia Walby and Brian Francis 
+## **"Re-sexing violent crime: Sex bias in official estimates of violent crime underestimates the extent of violence against women and girls"**        by Sylvia Walby and Brian Francis 
 
 The SPSS syntax files are stored in the branch `SYNTAX`. These all have the extension .sps and can br opened in SPSS or in any text editor to view (OpenOffice Writer, WORD, wordpad).
 There are worked examples used to get the weighted counts for specific years. We have supplied the worked code for the years 2009/10 and 2019/20. These are in the branches `2009-10` and `2019-20`.
