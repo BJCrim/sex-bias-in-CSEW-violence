@@ -1,30 +1,43 @@
-﻿* Encoding: UTF-8.
+Set the working directory, which will contain the data files for 2019/20
+```
 cd "C:\Users\meshuser\Dropbox\Changing violence\data and syntax\19-20".
-* open the non-victim form dataset.
-
+```
+Open the non-victim form dataset. This file has one line of data for each respondent. SPSS refers to this gile as DataSet2.
+```
 GET FILE='csew_apr19mar20_nvf.sav'.
 DATASET NAME DataSet2.
 DATASET ACTIVATE DataSet2.
 COMPUTE SAMPYEAR=2019.
-*  get the number of cases by sex.
-
+```
+Get the number of cases by sex.
+```
 MEANS TABLES=rowlabel BY sex 
   /CELLS=COUNT.
 WEIGHT BY C11IndivWgt.
-* get the weighted number of cases by sex -this will be the population values of those in households aged 16 or more. 
-
+```
+Get the weighted number of cases by sex -this will be the population values of those in households aged 16 or more. 
+```
 MEANS TABLES=rowlabel BY sex 
   /CELLS=COUNT.
 WEIGHT OFF.
+```
+Make sure the data set is in the correct order.
+```
 SORT CASES BY rowlabel.
-* now open the victim form dataset.
-
+```
+Now open the victim form dataset. This file has multiple lines of data for each respondent - one for each crime report. 
+If the repondent is a non-victim, then then there are no records.
+```
 GET  FILE='csew_apr19mar20_vf.sav'.
 DATASET NAME DataSet1.
 DATASET ACTIVATE DataSet1.
+```
+And make sure that this file is also sorted in the same order as Dataset2.
+```
 SORT CASES BY rowlabel.
-* and merge them together, keeping only useful values.
-
+```
+Now merge them together, keeping only useful variables.
+```
 MATCH FILES /FILE=*
   /TABLE='DataSet2'
   /BY ROWLABEL
@@ -35,6 +48,7 @@ EXECUTE.
 DATASET CLOSE Dataset2.
 FILTER OFF.
 USE ALL.
+```
 SELECT IF (offence =11 or offence =12 or offence =13 or offence =21 or offence =32 or offence =33).
 RECODE OFFENCE (11,32=1)(12,33=2)(13=3)(21=4) INTO VIOLTYPE.
 VALUE LABELS VIOLTYPE 1 'Serious Wounding' 2 'Other Wounding' 3 'Common Assault' 4 'Attempted Assault'.
@@ -86,4 +100,5 @@ CROSSTABS NUMBER_UNCAPPED  NUMBER BY SEX.
 
 MEANS TABLES=C11IndivWgt BY sex 
   /CELLS=MEAN COUNT.
+
 
