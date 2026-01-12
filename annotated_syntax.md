@@ -15,13 +15,21 @@ MEANS TABLES=rowlabel BY sex
   /CELLS=COUNT.
 WEIGHT BY C11IndivWgt.
 ```
-Get the weighted number of cases by sex -this will be the population values of those in households aged 16 or more. 
+Get the weighted number of cases by sex -this will be the population values of those in households aged 16 or more.
+
 ```
 MEANS TABLES=rowlabel BY sex 
   /CELLS=COUNT.
 WEIGHT OFF.
 ```
-Make sure the data set is in the correct order.
+
+|Sex|N|
+|---|---|
+|Male|15505|
+|Female|18229|
+|Total|33734|
+
+Now make sure the data set is in the correct order.
 ```
 SORT CASES BY rowlabel.
 ```
@@ -100,5 +108,6 @@ CROSSTABS NUMBER_UNCAPPED  NUMBER BY SEX.
 
 MEANS TABLES=C11IndivWgt BY sex 
   /CELLS=MEAN COUNT.
+
 
 
