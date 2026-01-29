@@ -72,7 +72,7 @@ FORMATS  VIOLTYPE (F5.0).
 EXECUTE.
 SAVE OUTFILE='CSEW_19_20_VIOL.sav'/COMPRESSED.
 ```
-We now produce the estimated number of violent crimes  in the population, by sex for uncapped,  capped at the 98th percentile and capped at 5. weighted number of incidents by sex  below (capped at 5, capped at 98th percentile, uncapped).
+We now produce the estimated number of violent crimes  in the population, by sex  below (capped at 5, capped at 98th percentile, uncapped) using the individual weights stored in the variable **C11IndivWgt**.
 ```
 WEIGHT BY C11IndivWgt.
 MEANS TABLES= numinc number number_uncapped BY sex
@@ -86,12 +86,20 @@ MEANS TABLES= numinc number number_uncapped BY sex
 +   Total	  1147989	                               1238572	                                     1410018
 ```
 
-Now the  weighted number of incidents by relationship (capped at 5, capped at 98th percentile, uncapped). Relationship is stored in an ONS variable called **VIOLGRPNR**. 
+Now the  weighted number of incidents by _relationship_ (capped at 5, capped at 98th percentile, uncapped). Relationship is stored in an ONS variable called **VIOLGRPNR**. 
 ```
 MEANS TABLES= numinc number number_uncapped BY violgrpnr
   /CELLS=SUM.
 ```
-Finally the weighted number of incidents by sex and relationship (capped at 5, capped at 98th percentile, uncapped).
+
+```diff
++ Relationship		  Number of incidents cap at 5  	Number of incidents (capped at 98%ile)     Uncapped number of incidents	
++ Domestic	        188477	                          199961	                                   212131
++ Stranger	        483434                            510624	                                   519137
++ Acquaintance	    476078	                          527987	                                   678750
++ Total	           1147989	                         1238572	                                  1410018
+```
+Finally the weighted number of incidents by _sex_ and _relationship_ (capped at 5, capped at 98th percentile, uncapped).
 ```
 MEANS TABLES= numinc number number_uncapped BY sex BY violgrpnr
   /CELLS=SUM.
@@ -104,6 +112,7 @@ MEANS TABLES= numinc number number_uncapped BY sex  BY VIOLTYPE
 MEANS TABLES= numinc number number_uncapped BY sex BY violgrpnr BY VIOLTYPE
   /CELLS=SUM.
 ```
+
 
 
 
