@@ -99,19 +99,98 @@ MEANS TABLES= numinc number number_uncapped BY violgrpnr
 + Acquaintance	    476078	                          527987	                                   678750
 + Total	           1147989	                         1238572	                                  1410018
 ```
-Finally the weighted number of incidents by _sex_ and _relationship_ (capped at 5, capped at 98th percentile, uncapped).
+Next,  the weighted number of incidents by _sex_ and _relationship_ (capped at 5, capped at 98th percentile, uncapped).
 ```
 MEANS TABLES= numinc number number_uncapped BY sex BY violgrpnr
   /CELLS=SUM.
 ```
-And the weighted number of incidents by sex and relationship (capped at 5, capped at 98th percentile, uncapped).
-```
-MEANS TABLES= numinc number number_uncapped BY sex  BY VIOLTYPE
-  /CELLS=SUM.
 
+```diff
++ Sex     Relationship		  Number of incidents cap at 5  	Number of incidents (capped at 98%ile)     Uncapped number of incidents
++__________________________________________________________________________________________________________________________________
++  Male	  Domestic            47824	                          47824	                                     47824
++	        Stranger	        347352	                         368636	                                    377150
++	        Acquaintance	    283913	                         323588	                                    401852
++	        Total	            679089	                         740048	                                    826826
++ Female	Domestic           140653	                         152137	                                    164306
++	        Stranger	        136082	                         141988	                                    141988
++	        Acquaintance	    192166	                         204399	                                    276898
++	        Total	            468901	                         498524	                                    583192
++ Total	  Domestic           188477	                         199961	                                    212131
++	        Stranger	        483434	                         510624	                                    519137
++	        Acquaintance	    476078	                         527987	                                    678750
++	        Total	           1147989	                        1238572	                                   1410018
++
+```
+Next,  the weighted number of incidents by _sex_ and _type of violence_ (severity) (capped at 5, capped at 98th percentile, uncapped).
+```
+MEANS TABLES=numinc number number_uncapped BY sex  BY VIOLTYPE 
+  /CELLS=SUM.
+```
+
+```diff
+
++ Sex     Type	         Number of incidents cap at 5  	Number of incidents (capped at 98%ile)     Uncapped number of incidents
++__________________________________________________________________________________________________________________________________
++ Male	 Serious Wounding	  56947	                       56947	                                      56947
++	       Other Wounding	   126641	                      159483	                                     167996
++	       Common Assault	   390007	                      418125	                                     496389
++        Attempted Assault 105494	                      105494	                                     105494
++	       Total	           679089                     	740048	                                     826826
++ Female Serious Wounding	  18924                        18924	                                      18924
++	       Other Wounding	    87845	                      105235	                                     117404
++	       Common Assault	   297850	                      310083	                                     382582
++	       Attempted Assault	64282	                       64282                                      	64282
++	       Total	           468901	                      498524	                                     583192
++ Total	 Serious Wounding	  75870	                       75870	                                      75870
++	       Other Wounding	   214486	                      264718	                                     285401
++	       Common Assault	   687857	                      728209	                                     878972
++	       Attempted Assault 169776	                      169776	                                     169776
++	       Total	          1147989	                     1238572	                                    1410018
++
+```
+And, finally, the weighted number of incidents by _sex_, _relationship_ and _type of violence_ (severity) (capped at 5, capped at 98th percentile, uncapped).
+```
 MEANS TABLES= numinc number number_uncapped BY sex BY violgrpnr BY VIOLTYPE
   /CELLS=SUM.
 ```
+<img width="724" height="1422" alt="image" src="https://github.com/user-attachments/assets/fd04813b-bf3a-422d-b64c-3d71089d7c38" />
+
+We now move onto estimating the number ovcitims of violent crime.  Data is stored as crime events - each respondent is allowed up to six. So we need
+to aggregate the data to produce one value per case, disaggregated by any factors under consideration  First we need to aggregate by _sex_ and _relationship_.
+a respondent may have multiple violent events carried out by perptrators with differing relationships. VICT is aggregated into VICT_max which takes the value 1 or zero for each  sex-relationship combination. Weighted sums of this variable are then produced.
+
+'''
+DATASET DECLARE datasetagg1. 
+SORT CASES BY rowlabel sex violgrpnr. 
+AGGREGATE 
+  /OUTFILE='datasetagg1' 
+  /PRESORTED 
+  /BREAK=rowlabel sex violgrpnr 
+    /VICT_max=MAX(VICT) / C11IndivWgtAGG1=MAX (C11IndivWgt)/. 
+DATASET ACTIVATE datasetagg1. 
+WEIGHT BY C11IndivWgtAGG1. 
+MEANS TABLES=VICT_max  BY sex  BY violgrpnr 
+  /CELLS=SUM.
+```
+
+```diff
++  Sex	  Relationship	estimated number of victims in population
++   Male	Domestic	       33063
++	       Stranger	        275266
++	       Acquaintance	    166781
++	       Total	          475111
++ Female	Domestic	       79006
++	       Stranger	        105707
++	       Acquaintance	    121905
++	       Total	          306618
++ Total	 Domestic	        112069
++	       Stranger	        380973
++	       Acquaintance	    288686
++       Total	            781728
+```
+
+e 
 
 
 
