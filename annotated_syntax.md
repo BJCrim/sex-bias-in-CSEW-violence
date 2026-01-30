@@ -255,7 +255,8 @@ MEANS TABLES=VICT_max    BY sex
 ```
 
 We now copy the relevant figures for 2019/20 into the EXCEL spreadsheet.  Ther are numerous worksheets - one for eacch type of disaggregation. So worksheet 
-*mdom* contains the estimates for male domestic violence.  Row 25 contains the esitmated totals over 16 years of data (2004/5 to 2019/20). Columns movave3 and movave4 are calculated within the spreadsheet and contain the three-year and four-year moving averages respectively.   
+*maledomestic* contains the estimates for male domestic violence.  Row 25 contains the estimated totals over 16 years of data (2004/5 to 2019/20). Columns movave3 and movave4 are calculated within the spreadsheet and contain the three-year and four-year moving averages respectively.   
+
 
 
 
