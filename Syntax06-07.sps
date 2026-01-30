@@ -1,7 +1,7 @@
 ﻿* Encoding: UTF-8.
-cd "C:\Users\meshuser\Dropbox\Changing violence\data and syntax\06-07".
+cd "D:\...\Changing violence\data and syntax\06-07".
 
-GET FILE='bcs_apr06mar07_to_esrc.sav'.
+GET FILE='bcs_apr06mar07_nvf.sav'.
 DATASET NAME DataSetnvf.
 SORT CASES BY ROWLABEL.
 
@@ -37,7 +37,7 @@ SORT CASES BY rowlabel.
 * now open the victim form dataset.
 *==================================================================================================
 
-GET  FILE='bcs_victim_form_2006-7_to_esrc.sav' .
+GET  FILE='bcs_apr06mar07_vf.sav' .
     
 DATASET NAME DataSetvf.
 SORT CASES BY match.
@@ -59,7 +59,7 @@ MATCH FILES /FILE='DataSetvfall'
   /TABLE='DataSetnvfall'
   /BY ROWLABEL
   /KEEP= ROWLABEL SEX AGE SAMPYEAR PINCID BEFOR99 SUSPEND SAMPTYPE YRINCIB WHERHAPP  VINTRO OFFENCE NSERIES NUMINC  
-                VIOLGRP   OFFREL3 OFFREL3A to OFFREL3Q KNEWOFF1 SEENOFF1 
+                VIOLGRP  OFFREL3 OFFREL3A to OFFREL3Q KNEWOFF1 SEENOFF1 
              KNEWOFF SEENOFF NUMOFF INDIVWGT   C11IndivWgt . 
 EXECUTE.
 DATASET NAME DataSetviol.
@@ -68,10 +68,27 @@ DATASET ACTIVATE DataSetviol.
 
 FILTER OFF.
 USE ALL.
+COMPUTE VIOLGRP2=$SYSMIS.
+IF (OFFREL3 le 7)violgrp2=1.
+IF(OFFREL3 GT 7 AND OFFREL3 LE 15) VIOLGRP2=2. 
+IF(MISSING (OFFREL3) AND (OFFREL3A =1 OR OFFREL3B=1 OR OFFREL3C=1 OR OFFREL3D=1 or OFFREL3E=1 OR OFFREL3F=1
+    OR OFFREL3G=1)) VIOLGRP2=1.
+EXECUTE.
+IF (MISSING(VIOLGRP2)AND (OFFREL3A =0 AND  OFFREL3B=0 AND OFFREL3C=0 AND OFFREL3D=0 AND OFFREL3E=0 AND OFFREL3F=0
+    AND OFFREL3G=0) AND (OFFREL3H=1 OR    OFFREL3I=1    OR OFFREL3J=1   OR OFFREL3K=1   OR OFFREL3L=1  OR OFFREL3M=1 
+    OR OFFREL3N=1 OR OFFREL3O=1)) VIOLGRP2=2. 
+EXECUTE.
+IF (missing(VIOLGRP2) AND KNEWOFF LE 2) VIOLGRP2=2.
+IF(MISSING(VIOLGRP2) AND SEENOFF =1) VIOLGRP2=2.
+IF(MISSING(VIOLGRP2) AND SEENOFF=2 AND KNEWOFF=3) VIOLGRP2=3.
+EXECUTE.
+IF(MISSING(VIOLGRP2) AND (KNEWOFF1 EQ 1 OR SEENOFF1 =1)) VIOLGRP2=2.
+IF(KNEWOFF1 eq 2 AND SEENOFF1 =2) VIOLGRP2=3. 
 SELECT IF (offence =11 or offence =12 or offence =13 or offence =21 or offence =32 or offence =33).
 RECODE OFFENCE (11,32=1)(12,33=2)(13=3)(21=4) INTO VIOLTYPE.
 VARIABLE LABELS VIOLTYPE 'Seriousness of violence'.
-VALUE LABELS VIOLTYPE 1 'Serious Wounding' 2 'Other Wounding' 3 'Common Assault' 4 'Attempted Assault'.
+VALUE LABELS VIOLTYPE 1 'Serious Wounding' 2 'Other Wounding' 3 'Common Assault' 4 'Attempted Assault'
+             / VIOLGRP2 1 'Domestic' 2 'Acquaintance' 3 'Stranger'. 
 *===================================================================================
 * NUMINC is capped at 5.
 * First create NUMBER_UNCAPPED from NSERIES.
@@ -88,7 +105,7 @@ IF (NUMBER> CAP) NUMBER =CAP.
 * NUMBER is number of incidents with new cap.
 *.
 COMPUTE VICT=NUMBER GT 0.
-VARIABLE LABELS VICT 'Victims' NUMBER 'Incidents capped at new cap' NUMBER_UNCAPPED ' number of uncapped incidents'. 
+VARIABLE LABELS  NUMBER 'Incidents capped at new cap' NUMBER_UNCAPPED ' number of uncapped incidents'. 
 
 FORMATS VICT VIOLTYPE NUMBER NUMINC  NUMBER_UNCAPPED(F5.0).
 EXECUTE.
@@ -103,32 +120,69 @@ MEANS TABLES=rowlabel BY sex
 * weighted number of incidents by sex  below (victims, capped at 5, capped at 98th percentile, uncapped)
 
 WEIGHT BY C11IndivWgt.
-MEANS TABLES=vict numinc number number_uncapped BY sex
+MEANS TABLES= numinc number number_uncapped BY sex
   /CELLS=SUM.
 * weighted number of incidents by relationship (capped at 5, capped at 98th percentile, uncapped).
 
-MEANS TABLES=vict numinc number number_uncapped BY violgrp
+MEANS TABLES=numinc number number_uncapped BY violgrp
   /CELLS=SUM.
 * weighted number of incidents by sex and relationship (capped at 5, capped at 98th percentile, uncapped).
 
-MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrp
+MEANS TABLES=numinc number number_uncapped BY sex BY violgrp
   /CELLS=SUM.
 
-MEANS TABLES=vict numinc number number_uncapped BY sex  BY VIOLTYPE
-  /CELLS=SUM.
- 
- WEIGHT OFF.
- MEANS TABLES=vict numinc number number_uncapped BY sex BY VIOLTYPE
-  /CELLS=SUM. 
-
-WEIGHT BY C11IndivWgt.
-MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrp BY VIOLTYPE
+MEANS TABLES=numinc number number_uncapped BY sex  BY VIOLTYPE
   /CELLS=SUM.
 
- WEIGHT OFF.
-  MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrp BY VIOLTYPE
-  /CELLS=SUM. 
+MEANS TABLES=numinc number number_uncapped BY sex BY violgrp BY VIOLTYPE
+  /CELLS=SUM.
 
-FREQUENCIES NUMBER_UNCAPPED.
-CROSSTABS NUMBER_UNCAPPED  NUMBER BY SEX.
+
+DATASET NAME datasetcombined.
+
+    SORT CASES BY rowlabel sex violgrp.
+    DATASET DECLARE datasetagg1.
+      AGGREGATE
+      /OUTFILE='datasetagg1'
+      /PRESORTED
+      /BREAK=rowlabel sex violgrp
+        /VICT_max=MAX(VICT) / C11IndivWgtAGG1=MAX (C11IndivWgt)/.
+    EXECUTE.
+    DATASET ACTIVATE datasetagg1.
+    WEIGHT BY C11IndivWgtAGG1.
+    MEANS TABLES=VICT_max  BY sex  BY violgrp
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg1.
+    
+    DATASET activate datasetcombined.
+     DATASET DECLARE datasetagg2.
+    SORT CASES BY rowlabel  sex violtype.
+    AGGREGATE
+      /OUTFILE='datasetagg2'
+      /PRESORTED
+      /BREAK=rowlabel sex violtype
+        /VICT_max = MAX(VICT) / C11IndivWgtAGG2=MAX (C11IndivWgt)/.
+   EXECUTE.
+     DATASET ACTIVATE datasetagg2.
+    WEIGHT BY C11IndivWgtAGG2.
+    MEANS TABLES=VICT_max    BY SEX BY violtype
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg2.
+    
+     DATASET DECLARE datasetagg3.
+     DATASET activate datasetcombined.
+    SORT CASES BY rowlabel  sex.
+    AGGREGATE
+      /OUTFILE='datasetagg3'
+      /PRESORTED
+      /BREAK=rowlabel sex
+        /VICT_max = MAX(VICT) / C11IndivWgtAGG3=MAX (C11IndivWgt)/.
+    DATASET ACTIVATE datasetagg3.
+    WEIGHT BY C11IndivWgtAGG3.
+    MEANS TABLES=VICT_max    BY sex
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg3.
+
+
+
 

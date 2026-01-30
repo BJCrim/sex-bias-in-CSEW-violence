@@ -1,5 +1,5 @@
 ﻿* Encoding: UTF-8.
-cd "C:\Users\meshuser\Dropbox\Changing violence\data and syntax\17-18".
+cd "D:\...\Changing violence\data and syntax\17-18".
 * open the non-victim form dataset.
 
 GET FILE='csew_apr17mar18_nvf.sav'.
@@ -23,7 +23,7 @@ GET  FILE='csew_apr17mar18_vf.sav'.
 DATASET NAME DataSet1.
 DATASET ACTIVATE DataSet1.
 SORT CASES BY rowlabel.
-* and merge them together, keeping only useful values.
+* and merget them together, keeping only useful values.
 
 MATCH FILES /FILE=*
   /TABLE='DataSet2'
@@ -42,7 +42,6 @@ VARIABLE LABELS VIOLTYPE 'Seriousness of violence'.
 VALUE LABELS VIOLTYPE 1 'Serious Wounding' 2 'Other Wounding' 3 'Common Assault' 4 'Attempted Assault'.
 
 Compute VICT=NUMBER GT 0.
-VARIABLE LABELS VICT 'Victims'.
 COMPUTE NUMINC=NUMBER.
 IF(NUMBER>5) NUMINC=5. 
 FORMATS VICT VIOLTYPE (F5.0).
@@ -58,35 +57,63 @@ MEANS TABLES=rowlabel BY sex
 * weighted number of incidents by sex  below (victims, capped at 5, capped at 98th percentile, uncapped)
 
 WEIGHT BY C11IndivWgt.
-MEANS TABLES=vict numinc number number_uncapped BY sex
+MEANS TABLES=numinc number number_uncapped BY sex
   /CELLS=SUM.
 * weighted number of incidents by relationship (capped at 5, capped at 98th percentile, uncapped).
 
-MEANS TABLES=vict numinc number number_uncapped BY violgrpnr
+MEANS TABLES=numinc number number_uncapped BY violgrpnr
   /CELLS=SUM.
 * weighted number of incidents by sex and relationship (capped at 5, capped at 98th percentile, uncapped).
 
-MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrpnr
+MEANS TABLES=numinc number number_uncapped BY sex BY violgrpnr
   /CELLS=SUM.
 
-MEANS TABLES=vict numinc number number_uncapped BY sex  BY VIOLTYPE
+MEANS TABLES=numinc number number_uncapped BY sex  BY VIOLTYPE
   /CELLS=SUM.
  
- WEIGHT OFF.
- MEANS TABLES=vict numinc number number_uncapped BY sex BY VIOLTYPE
-  /CELLS=SUM. 
-
-WEIGHT BY C11IndivWgt.
-MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrpnr BY VIOLTYPE
+MEANS TABLES=numinc number number_uncapped BY sex BY violgrpnr BY VIOLTYPE
   /CELLS=SUM.
 
- WEIGHT OFF.
-  MEANS TABLES=vict numinc number number_uncapped BY sex BY violgrpnr BY VIOLTYPE
-  /CELLS=SUM. 
-
-FREQUENCIES NUMBER_UNCAPPED.
-CROSSTABS NUMBER_UNCAPPED  NUMBER BY SEX.
-
-MEANS TABLES=C11IndivWgt BY sex 
-  /CELLS=MEAN COUNT.
-
+    DATASET DECLARE datasetagg1.
+    SORT CASES BY rowlabel sex violgrpnr.
+    AGGREGATE
+      /OUTFILE='datasetagg1'
+      /PRESORTED
+      /BREAK=rowlabel sex violgrpnr
+        /VICT_max=MAX(VICT) / C11IndivWgtAGG1=MAX (C11IndivWgt)/.
+    DATASET ACTIVATE datasetagg1.
+    WEIGHT BY C11IndivWgtAGG1.
+    MEANS TABLES=VICT_max  BY sex  BY violgrpnr
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg1.
+    
+    DATASET activate dataset1.
+    DATASET DECLARE datasetagg2.
+    SORT CASES BY rowlabel  sex violtype.
+    AGGREGATE
+      /OUTFILE='datasetagg2'
+      /PRESORTED
+      /BREAK=rowlabel sex violtype
+        /VICT_max = MAX(VICT) / C11IndivWgtAGG2=MAX (C11IndivWgt)/.
+    DATASET ACTIVATE datasetagg2.
+    WEIGHT BY C11IndivWgtAGG2.
+    MEANS TABLES=VICT_max    BY SEX BY violtype
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg2.
+    
+    DATASET activate dataset1.
+    DATASET DECLARE datasetagg3.
+    SORT CASES BY rowlabel  sex.
+    AGGREGATE
+      /OUTFILE='datasetagg3'
+      /PRESORTED
+      /BREAK=rowlabel sex
+        /VICT_max = MAX(VICT) / C11IndivWgtAGG3=MAX (C11IndivWgt)/.
+    DATASET ACTIVATE datasetagg3.
+    WEIGHT BY C11IndivWgtAGG3.
+    MEANS TABLES=VICT_max    BY sex
+      /CELLS=SUM.
+    DATASET CLOSE datasetagg3.
+    
+    
+    
