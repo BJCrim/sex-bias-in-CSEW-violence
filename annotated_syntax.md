@@ -190,7 +190,72 @@ MEANS TABLES=VICT_max  BY sex  BY violgrpnr
 +         Total	            781728
 ```
 
-Now w produce the number of victims disaggregated by sex and type of vilenc ( severity)))
+Now we produce the number of victims disaggregated by sex and type of violence ( severity). WE are really only interested in the number of victims of serious violence cross-classified by sex.
+
+```
+DATASET CLOSE datasetagg1.
+
+DATASET activate dataset1.
+DATASET DECLARE datasetagg2.
+SORT CASES BY rowlabel  sex violtype.
+AGGREGATE
+  /OUTFILE='datasetagg2'
+  /PRESORTED
+  /BREAK=rowlabel sex violtype
+    /VICT_max = MAX(VICT) / C11IndivWgtAGG2=MAX (C11IndivWgt)/.
+DATASET ACTIVATE datasetagg2.
+WEIGHT BY C11IndivWgtAGG2.
+MEANS TABLES=VICT_max    BY SEX BY violtype
+  /CELLS=SUM.
+
+```
+  
+```diff
++    Sex	 Type 	estimated number of victims in population
++   Male	Serious Wounding	  50301
++	        Other Wounding	    82823
++	        Common Assault	   275312
++	        Attempted Assault	  74307
++	        Total	             482743
++ Female	Serious Wounding	  15214
++	        Other Wounding	    58136
++	        Common Assault	   196779
++	        Attempted Assault	  44578
++	        Total	             314707
++ Total   Serious Wounding	  65515
++	        Other Wounding	   140959
++	        Common Assault	   472091
++	        Attempted Assault	 118885
++	        Total	             797450
+```
+
+Finally we estimate the number of violent victims by sex. 
+```
+DATASET CLOSE datasetagg2.
+
+DATASET activate dataset1.
+DATASET DECLARE datasetagg3.
+SORT CASES BY rowlabel  sex.
+AGGREGATE
+  /OUTFILE='datasetagg3'
+  /PRESORTED
+  /BREAK=rowlabel sex
+    /VICT_max = MAX(VICT) / C11IndivWgtAGG3=MAX (C11IndivWgt)/.
+DATASET ACTIVATE datasetagg3.
+WEIGHT BY C11IndivWgtAGG3.
+MEANS TABLES=VICT_max    BY sex
+  /CELLS=SUM.
+```
+
+```diff
++    Sex		estimated number of victims in population
++   Male	   462327
++ Female	   303849
++  Total	   766176
+```
+
+We now copy the relevant figures for 2019/20 into the EXCEL spreadsheet.  Ther are numerous worksheets - one for eacch type of disaggregation. So worksheet 
+*mdom* contains the estimates for male domestic violence.  Row 25 contains the esitmated totals over 16 years of data (2004/5 to 2019/20). Columns movave3 and movave4 are calculated within the spreadsheet and contain the three-year and four-year moving averages respectively.   
 
 
 
