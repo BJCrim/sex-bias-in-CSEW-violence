@@ -160,7 +160,7 @@ We now move onto estimating the number ovcitims of violent crime.  Data is store
 to aggregate the data to produce one value per case, disaggregated by any factors under consideration  First we need to aggregate by _sex_ and _relationship_.
 a respondent may have multiple violent events carried out by perptrators with differing relationships. VICT is aggregated into VICT_max which takes the value 1 or zero for each  sex-relationship combination. Weighted sums of this variable are then produced.
 
-'''
+```
 DATASET DECLARE datasetagg1. 
 SORT CASES BY rowlabel sex violgrpnr. 
 AGGREGATE 
@@ -176,21 +176,22 @@ MEANS TABLES=VICT_max  BY sex  BY violgrpnr
 
 ```diff
 +  Sex	  Relationship	estimated number of victims in population
-+   Male	Domestic	       33063
-+	       Stranger	        275266
-+	       Acquaintance	    166781
-+	       Total	          475111
-+ Female	Domestic	       79006
-+	       Stranger	        105707
-+	       Acquaintance	    121905
-+	       Total	          306618
-+ Total	 Domestic	        112069
-+	       Stranger	        380973
-+	       Acquaintance	    288686
-+       Total	            781728
++   Male	Domestic	         33063
++	        Stranger	        275266
++	        Acquaintance	    166781
++	        Total	            475111
++ Female	Domestic	         79006
++	        Stranger	        105707
++	        Acquaintance	    121905
++	        Total	            306618
++ Total   Domestic	        112069
++	        Stranger	        380973
++         Acquaintance	    288686
++         Total	            781728
 ```
 
-e 
+Now w produce the number of victims disaggregated by sex and type of vilenc ( severity)))
+
 
 
 
